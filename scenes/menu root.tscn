@@ -1,0 +1,176 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://icon.png" type="Texture" id=1]
+
+[sub_resource type="GDScript" id=1]
+
+script/source = "extends Node
+
+func _ready():
+	pass # Replace with function body.
+
+func signal_handler(id, obj_class, action):
+	var meth_name = obj_class + '_' + action
+	
+	if has_method(meth_name):
+		funcref(self, meth_name).call_func(id)
+	
+	print(meth_name)
+
+
+#STANDARD BUTTON METHODS FOR VISUAL EFFECTS
+func standard_button_up(id):
+	id.modulate = Color(\"ffffff\")
+
+func standard_button_down(id):
+	id.modulate = Color(\"999999\")
+
+func standard_button_mouse_entered(id):
+	id.modulate = Color(1.1,1.1,1.1)
+
+func standard_button_mouse_exited(id):
+	id.modulate = Color(1,1,1)"
+
+[sub_resource type="GDScript" id=2]
+
+script/source = "extends TextureButton
+
+onready var menu_root = get_node(\"..\")
+
+const obj_class = \"standard_button\"
+
+func _ready():
+	init_box_sprite()
+
+func init_box_sprite():
+	spawn_box_sprite(\"angle\",0,0)
+	spawn_box_sprite(\"angle\",rect_size.x,0,90)
+	spawn_box_sprite(\"angle\",rect_size.x,rect_size.y,180)
+	spawn_box_sprite(\"angle\",0,rect_size.y,270)
+	
+	spawn_box_sprite(\"edge\",16,0)
+	spawn_box_sprite(\"edge\",rect_size.x,16,90)
+	spawn_box_sprite(\"edge\",rect_size.x-16,rect_size.y,180)
+	spawn_box_sprite(\"edge\",0,rect_size.y-16,270)
+	
+	spawn_box_sprite(\"fill\",16,16)
+
+func spawn_box_sprite(box_part, pos_x, pos_y, rotation = 0):
+	var box_sprite = Sprite.new()
+	
+	box_sprite.texture = load(\"res://images/\"+ obj_class + \"_\" + box_part +\".png\")
+	box_sprite.centered = false
+	get_node(\"box sprite\").add_child(box_sprite)
+	
+	box_sprite.position.x = pos_x
+	box_sprite.position.y = pos_y
+	
+	box_sprite.rotation_degrees = rotation
+	
+	if box_part == \"edge\":
+		box_sprite.region_enabled = true
+		if rotation == 0 || rotation == 180:
+			box_sprite.region_rect = Rect2(0,0,rect_size.x - 16 * 2,16)
+		else:
+			box_sprite.region_rect = Rect2(0,0,rect_size.y - 16 * 2,16)
+		box_sprite.texture.flags = 2
+	
+	if box_part == \"fill\":
+		box_sprite.region_enabled = true
+		box_sprite.region_rect = Rect2(0,0,rect_size.x - 16 * 2,rect_size.y - 16 * 2)
+		box_sprite.texture.flags = 2
+	
+	return box_sprite
+
+
+#SIGNAL HANDLING METHODS
+func _emit_signal_to_root(action):
+	menu_root.signal_handler(self, obj_class, action)
+
+func _on_standard_button_button_up():
+	_emit_signal_to_root(\"up\")
+
+func _on_standard_button_pressed():
+	_emit_signal_to_root(\"pressed\")
+
+func _on_standard_button_button_down():
+	_emit_signal_to_root(\"down\")
+
+func _on_standard_button_mouse_entered():
+	_emit_signal_to_root(\"mouse_entered\")
+
+func _on_standard_button_mouse_exited():
+	_emit_signal_to_root(\"mouse_exited\")
+"
+
+[node name="menu root" type="Node"]
+script = SubResource( 1 )
+
+[node name="standard_button" type="TextureButton" parent="."]
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 234.0
+margin_top = 204.0
+margin_right = 326.0
+margin_bottom = 237.0
+rect_pivot_offset = Vector2( 0, 0 )
+rect_clip_content = false
+focus_mode = 2
+mouse_filter = 0
+mouse_default_cursor_shape = 0
+size_flags_horizontal = 1
+size_flags_vertical = 1
+toggle_mode = false
+enabled_focus_mode = 2
+shortcut = null
+group = null
+texture_normal = ExtResource( 1 )
+expand = true
+script = SubResource( 2 )
+_sections_unfolded = [ "Rect", "Textures" ]
+
+[node name="box sprite" type="Control" parent="standard_button"]
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_right = 40.0
+margin_bottom = 40.0
+rect_pivot_offset = Vector2( 0, 0 )
+rect_clip_content = false
+mouse_filter = 0
+mouse_default_cursor_shape = 0
+size_flags_horizontal = 1
+size_flags_vertical = 1
+_sections_unfolded = [ "Anchor", "Grow Direction", "Margin", "Rect" ]
+
+[node name="Label" type="Label" parent="standard_button"]
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.0
+anchor_bottom = 0.0
+margin_left = 2.0
+margin_top = 1.0
+margin_right = 91.0
+margin_bottom = 33.0
+rect_pivot_offset = Vector2( 0, 0 )
+rect_clip_content = false
+mouse_filter = 2
+mouse_default_cursor_shape = 0
+size_flags_horizontal = 1
+size_flags_vertical = 4
+text = "Botão teste"
+align = 1
+valign = 1
+percent_visible = 1.0
+lines_skipped = 0
+max_lines_visible = -1
+_sections_unfolded = [ "Anchor", "Grow Direction", "Margin", "Pause", "Rect", "Script" ]
+
+[connection signal="button_down" from="standard_button" to="standard_button" method="_on_standard_button_button_down"]
+[connection signal="button_up" from="standard_button" to="standard_button" method="_on_standard_button_button_up"]
+[connection signal="mouse_entered" from="standard_button" to="standard_button" method="_on_standard_button_mouse_entered"]
+[connection signal="mouse_exited" from="standard_button" to="standard_button" method="_on_standard_button_mouse_exited"]
+[connection signal="pressed" from="standard_button" to="standard_button" method="_on_standard_button_pressed"]
